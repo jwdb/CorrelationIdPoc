@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "CorrelationIdOpenTelemetry": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7178",
+      "launchBrowser": false
+    }
+  }
+}
