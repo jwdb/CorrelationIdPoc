@@ -1,34 +1,27 @@
-using System.Net;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 
-namespace CorrelationIdPocIsolated
+namespace CorrelationIdPocIsolated;
+
+public class TestFunction
 {
-    public class TestFunction
+    private readonly ILogger _logger;
+
+    public TestFunction(ILoggerFactory loggerFactory)
     {
-        private readonly ILogger _logger;
+        _logger = loggerFactory.CreateLogger<TestFunction>();
+    }
 
-        public TestFunction(ILoggerFactory loggerFactory)
-        {
-            _logger = loggerFactory.CreateLogger<TestFunction>();
-        }
+    [Function(nameof(TestFunction))]
+    public async Task Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequest req)
+    {
+        _logger.LogInformation("C# HTTP trigger function processed a request.");
+        string? correlationId = req.Headers["x-correlation-id"].FirstOrDefault();
 
-        [Function("TestFunction")]
-        public HttpResponseData Run([HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequestData req)
-        {
-            _logger.LogInformation("C# HTTP trigger function processed a request.");
-            var headers = req.Headers.ToDictionary(c => c.Key, c => c.Value);
-            string? correlationId = headers["x-correlation-id"].FirstOrDefault();
-            string? traceParent = headers["traceparent"].FirstOrDefault();
+        string responseMessage = $"This HTTP triggered function executed successfully. CorrelationId: {correlationId}";
+        req.HttpContext.Response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
 
-            string responseMessage = $"This HTTP triggered function executed successfully. CorrelationId: {correlationId}, traceParent: {traceParent}";
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
-
-            response.WriteString(responseMessage);
-
-            return response;
-        }
+        await req.HttpContext.Response.WriteAsync(responseMessage);
     }
 }

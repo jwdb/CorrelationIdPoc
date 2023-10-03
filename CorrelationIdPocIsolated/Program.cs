@@ -1,15 +1,32 @@
+using Azure.Monitor.OpenTelemetry.AspNetCore;
 using CorrelationIdPocIsolated;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry;
+
+Sdk.SetDefaultTextMapPropagator(new CommercetoolsPropagator());
 
 var host = new HostBuilder()
-    .ConfigureFunctionsWorkerDefaults(configure => configure.UseWhen<RequestMiddleware>(context =>
+    .ConfigureServices((_, services) =>
     {
-        return context.FunctionDefinition.InputBindings.Values
-            .First(a => a.Type.EndsWith("Trigger")).Type == "httpTrigger";
-
-    }))
+        services
+            
+            .AddOpenTelemetry()
+            .UseAzureMonitor();
+    })
+    .ConfigureAppConfiguration(configure =>
+    {
+        configure.AddJsonFile("appsettings.json");
+    })
+    .ConfigureFunctionsWebApplication(configure =>
+    {
+        configure.UseWhen<RequestMiddleware>(c =>
+        {
+            return c.FunctionDefinition.InputBindings.Values
+                .First(a => a.Type.EndsWith("Trigger")).Type == "httpTrigger";
+        });
+    })
     .Build();
 
 host.Run();
