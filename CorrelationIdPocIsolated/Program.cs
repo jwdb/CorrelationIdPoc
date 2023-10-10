@@ -1,5 +1,6 @@
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using CorrelationIdPocIsolated;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,7 +12,10 @@ var host = new HostBuilder()
     .ConfigureServices((_, services) =>
     {
         services
-            
+            .AddHttpClient()
+            .Configure<WorkerOptions>(workerOptions => workerOptions.Capabilities["WorkerApplicationInsightsLoggingEnabled"] = bool.TrueString);
+
+        services
             .AddOpenTelemetry()
             .UseAzureMonitor();
     })

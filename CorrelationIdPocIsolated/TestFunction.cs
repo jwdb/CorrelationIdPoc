@@ -6,10 +6,12 @@ namespace CorrelationIdPocIsolated;
 
 public class TestFunction
 {
+    private readonly IHttpClientFactory _clientFactory;
     private readonly ILogger _logger;
 
-    public TestFunction(ILoggerFactory loggerFactory)
+    public TestFunction(ILoggerFactory loggerFactory, IHttpClientFactory clientFactory)
     {
+        _clientFactory = clientFactory;
         _logger = loggerFactory.CreateLogger<TestFunction>();
     }
 
@@ -21,6 +23,9 @@ public class TestFunction
 
         string responseMessage = $"This HTTP triggered function executed successfully. CorrelationId: {correlationId}";
         req.HttpContext.Response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
+
+        var client = _clientFactory.CreateClient();
+        var calltoGoogle = await client.GetAsync("http://google.nl");
 
         await req.HttpContext.Response.WriteAsync(responseMessage);
     }
