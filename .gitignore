@@ -363,3 +363,5 @@ MigrationBackup/
 FodyWeavers.xsd
 /CorrelationIdPocIsolated/appsettings.json
 /CorrelationIdPocIsolated/Properties/ServiceDependencies/jarbr-Test-function - Zip Deploy
+/CorrelationIdWebCoreApp/appsettings.json
+/CorrelationIdWebCoreApp/appsettings.Development.json
